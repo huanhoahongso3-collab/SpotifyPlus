@@ -31,9 +31,8 @@ android {
 
     buildTypes {
         release {
-            if (keystorePath != null) {
-                signingConfig signingConfigs.release
-            }
+            // Fall back to the debug key so builds without the release keystore are still installable
+            signingConfig keystorePath != null ? signingConfigs.release : signingConfigs.debug
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

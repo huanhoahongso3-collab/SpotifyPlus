@@ -28,15 +28,21 @@ jobs:
           packages: 'platform-tools'
 
       - name: Decode keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
         run: |
-          echo "${{ secrets.SIGNING_KEYSTORE_BASE64 }}" | base64 --decode > ${{ github.workspace }}/spotifyplus-release.jks
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > "${{ github.workspace }}/spotifyplus-release.jks"
+            echo "SIGNING_KEYSTORE_FILE=${{ github.workspace }}/spotifyplus-release.jks" >> "$GITHUB_ENV"
+          else
+            echo "No release keystore secret set, signing with the debug key"
+          fi
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
       - name: Build signed Release APK
         env:
-          SIGNING_KEYSTORE_FILE: ${{ github.workspace }}/spotifyplus-release.jks
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
