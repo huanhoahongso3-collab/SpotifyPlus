@@ -172,6 +172,16 @@ public class XposedLoader implements IXposedHookLoadPackage, IXposedHookZygoteIn
         XposedBridge.log("[SpotifyPlus] Initializing hooks (app package " + SpotifyPackage.appPackage + ", process " + lpparam.processName + ")");
         cleanUpCache(context);
 
+        // Loaders that don't support resource hooks never call handleInitPackageResources
+        if (References.modResources == null) {
+            try {
+                References.modResources = XModuleResources.createInstance(modulePath, null);
+            } catch (Throwable t) {
+                XposedBridge.log("[SpotifyPlus] Failed to load module resources");
+                XposedBridge.log(t);
+            }
+        }
+
         File outDir = new File(context.getCodeCacheDir(), "spotifyplus-libs");
         if (!outDir.exists() && !outDir.mkdirs())
             throw new IllegalStateException("Failed to create cache directory");
