@@ -1,6 +1,8 @@
 package com.lenerd46.spotifyplus;
 
+import android.content.Context;
 import android.content.res.Resources;
+import android.os.Process;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
@@ -32,6 +34,28 @@ public final class SpotifyPackage {
         appPackage = lpparam.packageName;
         appKnown = true;
         return true;
+    }
+
+    /**
+     * Some clones spoof the package name inside the process (it reports com.spotify.music), while the system
+     * knows the app by its real package. Intents must target the real one, otherwise they open the original app.
+     */
+    public static void resolveRealPackage(Context context, XC_LoadPackage.LoadPackageParam lpparam) {
+        try {
+            String[] packages = context.getPackageManager().getPackagesForUid(Process.myUid());
+            if (packages == null || packages.length == 0) return;
+
+            String real = packages[0];
+            if (packages.length > 1 && lpparam.processName != null) {
+                String processPackage = lpparam.processName.split(":")[0];
+                for (String candidate : packages) {
+                    if (candidate.equals(processPackage)) real = candidate;
+                }
+            }
+
+            appPackage = real;
+        } catch (Throwable ignored) {
+        }
     }
 
     public static boolean shouldHook(XC_InitPackageResources.InitPackageResourcesParam resparam) {

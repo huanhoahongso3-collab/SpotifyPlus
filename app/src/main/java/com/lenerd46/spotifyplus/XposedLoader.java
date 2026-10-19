@@ -1,6 +1,7 @@
 package com.lenerd46.spotifyplus;
 
 import android.app.Activity;
+import android.app.AndroidAppHelper;
 import android.app.Application;
 import android.content.*;
 import android.content.pm.ApplicationInfo;
@@ -32,6 +33,7 @@ import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -97,6 +99,14 @@ public class XposedLoader implements IXposedHookLoadPackage, IXposedHookZygoteIn
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Activity activity = (Activity) param.thisObject;
+                if (!applicationInitialized.get() && activity.getApplication() != null) {
+                    try {
+                        initApplication(activity.getApplication(), activity.getApplicationContext(), lpparam);
+                    } catch (Throwable t) {
+                        XposedBridge.log(t);
+                    }
+                }
+
                 Typeface beautifulFont = References.beautifulFont.get();
 
                 File outDir = new File(activity.getCodeCacheDir(), "spotifyplus-libs");
@@ -137,41 +147,58 @@ public class XposedLoader implements IXposedHookLoadPackage, IXposedHookZygoteIn
             }
         });
 
-        XposedHelpers.findAndHookMethod(Application.class, "attach", Context.class, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Context context = (Context) param.args[0];
-                cleanUpCache(context);
+        // Cloned apps (e.g. template/NPatch clones) load modules after Application.attach already ran,
+        // so initialize right away if an Application exists and fall back to attach / the first activity otherwise
+        Application existing = AndroidAppHelper.currentApplication();
+        if (existing != null) {
+            initApplication(existing, existing.getBaseContext() != null ? existing.getBaseContext() : existing, lpparam);
+        } else {
+            XposedHelpers.findAndHookMethod(Application.class, "attach", Context.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    initApplication((Application) param.thisObject, (Context) param.args[0], lpparam);
+                }
+            });
+        }
+    }
 
-                File outDir = new File(context.getCodeCacheDir(), "spotifyplus-libs");
-                if (!outDir.exists() && !outDir.mkdirs())
-                    throw new IllegalStateException("Failed to create cache directory");
+    private final AtomicBoolean applicationInitialized = new AtomicBoolean(false);
+
+    private void initApplication(Application application, Context context, LoadPackageParam lpparam) throws Throwable {
+        if (!applicationInitialized.compareAndSet(false, true))
+            return;
+
+        SpotifyPackage.resolveRealPackage(context, lpparam);
+        XposedBridge.log("[SpotifyPlus] Initializing hooks (app package " + SpotifyPackage.appPackage + ", process " + lpparam.processName + ")");
+        cleanUpCache(context);
+
+        File outDir = new File(context.getCodeCacheDir(), "spotifyplus-libs");
+        if (!outDir.exists() && !outDir.mkdirs())
+            throw new IllegalStateException("Failed to create cache directory");
 
 //                extractLibraries(modulePath, outDir);
 //                loadNativeLibraries(outDir);
 
-                SpotifyBottomSheet.initialize(bridge, lpparam.classLoader);
-                // new ScriptManager().init(context, lpparam.classLoader);
-                ScriptManager.getInstance().init(context, lpparam.classLoader);
-                new BeautifulLyricsHook().init(lpparam, bridge);
-                new NowPlayingLyricsGradientHook().init(lpparam, bridge);
-                new NowPlayingViewHook(context).init(lpparam, bridge);
-                new RemoveCreateButtonHook(context).init(lpparam, bridge);
-                new NetworkHook(context).init(lpparam, bridge);
-                new LastFmHook().init(lpparam, bridge);
-                new ContextMenu_AddButton().init(lpparam, bridge);
+        SpotifyBottomSheet.initialize(bridge, lpparam.classLoader);
+        // new ScriptManager().init(context, lpparam.classLoader);
+        ScriptManager.getInstance().init(context, lpparam.classLoader);
+        new BeautifulLyricsHook().init(lpparam, bridge);
+        new NowPlayingLyricsGradientHook().init(lpparam, bridge);
+        new NowPlayingViewHook(context).init(lpparam, bridge);
+        new RemoveCreateButtonHook(context).init(lpparam, bridge);
+        new NetworkHook(context).init(lpparam, bridge);
+        new LastFmHook().init(lpparam, bridge);
+        new ContextMenu_AddButton().init(lpparam, bridge);
 //                new HomePageHook().init(lpparam, bridge);
-                new AnimatedAlbumArtwork().init(lpparam, bridge);
-                new TestingHook().init(lpparam, bridge);
-                new NewContextMenuHook().init(lpparam, bridge);
-                new SleepTimerHook(context).init(lpparam, bridge);
-                new PrivateSessionHook(context).init(lpparam, bridge);
-                new ThemeHook((Application) param.thisObject).init(lpparam, bridge);
-                // new ThemeTest().init(lpparam, bridge);
-                // new LikedSongHook().init(lpparam, bridge);
-                // new KaraokeHook().init(lpparam, bridge);
-            }
-        });
+        new AnimatedAlbumArtwork().init(lpparam, bridge);
+        new TestingHook().init(lpparam, bridge);
+        new NewContextMenuHook().init(lpparam, bridge);
+        new SleepTimerHook(context).init(lpparam, bridge);
+        new PrivateSessionHook(context).init(lpparam, bridge);
+        new ThemeHook(application).init(lpparam, bridge);
+        // new ThemeTest().init(lpparam, bridge);
+        // new LikedSongHook().init(lpparam, bridge);
+        // new KaraokeHook().init(lpparam, bridge);
     }
 
     @Override
