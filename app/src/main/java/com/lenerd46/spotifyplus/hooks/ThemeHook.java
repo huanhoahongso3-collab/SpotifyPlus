@@ -1,5 +1,6 @@
 package com.lenerd46.spotifyplus.hooks;
 
+import com.lenerd46.spotifyplus.ArtworkUrls;
 import com.lenerd46.spotifyplus.SpotifyPackage;
 import com.lenerd46.spotifyplus.theme.AlbumArtworkGradient;
 import com.lenerd46.spotifyplus.theme.AlbumGradientColors;
@@ -1676,9 +1677,8 @@ public class ThemeHook extends SpotifyHook {
                             Map<?, ?> metadata = findCurrentTrackMetadata(param.args[0], playerStateClass, contextTrackClass);
                             if (metadata == null && metadataFlatteningConsumer) metadata = findMapWithKey(param.args[0], "image_url", 4, new IdentityHashMap<>());
                             if (metadata == null) return;
-                            Object imageValue = metadata.get("image_url");
-                            if (!(imageValue instanceof String) || ((String) imageValue).isEmpty()) return;
-                            String imageUrl = (String) imageValue;
+                            // May be null when playing on another device; the extracted color is still applied then
+                            String imageUrl = ArtworkUrls.fromMetadata(metadata);
                             Integer fallbackColor = null;
                             Object colorValue = metadata.get("extracted_color");
                             if (colorValue instanceof String && !((String) colorValue).isEmpty()) {
@@ -1688,6 +1688,7 @@ public class ThemeHook extends SpotifyHook {
                                 } catch (IllegalArgumentException ignored) {
                                 }
                             }
+                            if (imageUrl == null && fallbackColor == null) return;
                             requestArtworkTheme(imageUrl, fallbackColor);
                         } catch (Throwable throwable) {
                             XposedBridge.log(throwable);
@@ -1786,30 +1787,7 @@ public class ThemeHook extends SpotifyHook {
     }
 
     private static String normalizeArtworkUrl(String imageUrl) {
-        if (imageUrl == null) {
-            return null;
-        }
-
-        String trimmed = imageUrl.trim();
-
-        String spotifyPrefix = "spotify:image:";
-
-        if (trimmed.startsWith(spotifyPrefix)) {
-            String imageId = trimmed.substring(spotifyPrefix.length());
-
-            if (imageId.isEmpty()) {
-                return null;
-            }
-
-            return "https://i.scdn.co/image/" + imageId;
-        }
-
-        if (trimmed.startsWith("https://") || trimmed.startsWith("http://")) {
-            return trimmed;
-        }
-
-
-        return null;
+        return ArtworkUrls.normalize(imageUrl);
     }
 
     private static Bitmap downloadArtwork(String imageUrl) throws Exception {

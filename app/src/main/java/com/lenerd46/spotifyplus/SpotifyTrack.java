@@ -20,7 +20,8 @@ public class SpotifyTrack {
         this.position = position;
         this.color = color;
         this.lastUpdated = lastUpdated;
-        this.imageId = imageId.split(":").length == 3 ? imageId.split(":")[2] : "https://i.scdn.co/image/ab67616d0000b27332a7d87248d1b75463483df5";
+        // Full artwork URL, or null when the metadata has none (e.g. playback on another device)
+        this.imageId = ArtworkUrls.normalize(imageId);
         this.duration = duration;
         this.saved = saved;
     }

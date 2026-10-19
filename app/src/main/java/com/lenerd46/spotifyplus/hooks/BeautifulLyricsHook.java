@@ -30,6 +30,7 @@ import com.google.android.flexbox.FlexboxLayout;
 import com.google.android.flexbox.JustifyContent;
 import com.google.gson.*;
 import com.lenerd46.spotifyplus.R;
+import com.lenerd46.spotifyplus.ArtworkUrls;
 import com.lenerd46.spotifyplus.References;
 import com.lenerd46.spotifyplus.SpotifyTrack;
 import com.lenerd46.spotifyplus.beautifullyrics.entities.*;
@@ -1495,7 +1496,8 @@ public class BeautifulLyricsHook extends SpotifyHook {
                 SharedPreferences prefs = activity.getSharedPreferences("SpotifyPlus", Context.MODE_PRIVATE);
 
                 String id = track.uri.split(":")[2];
-                Bitmap albumArt = getBitmap(activity, track.imageId);
+                String artworkUrl = track.imageId != null ? track.imageId : ArtworkUrls.fromTrackUri(track.uri);
+                Bitmap albumArt = getBitmap(activity, artworkUrl);
                 activity.runOnUiThread(() -> {
                     if (!isOverlaySessionActive(activity, track, artworkSession)) return;
                     albumView.setImageBitmap(albumArt);
@@ -3032,11 +3034,14 @@ public class BeautifulLyricsHook extends SpotifyHook {
         });
     }
 
-    private Bitmap getBitmap(Context context, String id) {
+    private Bitmap getBitmap(Context context, String imageUrl) {
+        String url = ArtworkUrls.normalize(imageUrl);
+        if (url == null) return null;
+
         HttpURLConnection connection = null;
         java.io.File download = null;
         try {
-            connection = (HttpURLConnection) new URL("https://i.scdn.co/image/" + id).openConnection();
+            connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setConnectTimeout(10000);
             connection.setReadTimeout(10000);
             download = java.io.File.createTempFile("lyrics-cover-", ".img", context.getCacheDir());
