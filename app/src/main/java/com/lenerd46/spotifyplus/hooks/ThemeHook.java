@@ -1,5 +1,6 @@
 package com.lenerd46.spotifyplus.hooks;
 
+import com.lenerd46.spotifyplus.SpotifyPackage;
 import com.lenerd46.spotifyplus.theme.AlbumArtworkGradient;
 import com.lenerd46.spotifyplus.theme.AlbumGradientColors;
 import com.lenerd46.spotifyplus.theme.AnimatedThemeBackground;
@@ -641,7 +642,7 @@ public class ThemeHook extends SpotifyHook {
         appBar.setBackgroundTintList(ColorStateList.valueOf(baseBackground()));
         Object statusBarForeground = XposedHelpers.callMethod(appBar, "getStatusBarForeground");
         if (statusBarForeground != null) XposedHelpers.callMethod(appBar, "setStatusBarForegroundColor", baseBackground());
-        int gradientId = appBar.getResources().getIdentifier("gradient", "id", "com.spotify.music");
+        int gradientId = SpotifyPackage.id(appBar.getResources(), "gradient", "id");
         View fade = gradientId == 0 ? null : appBar.findViewById(gradientId);
         if (fade != null && fade.getBackground() instanceof GradientDrawable) {
             // filter_row_start_gradient fades FROM the theme to transparent,
@@ -2123,7 +2124,7 @@ public class ThemeHook extends SpotifyHook {
     }
 
     private int resourceId(String type, String name) {
-        int identifier = context.getResources().getIdentifier(name, type, context.getPackageName());
+        int identifier = SpotifyPackage.id(context.getResources(), name, type);
         if (identifier == 0) throw new IllegalStateException("Missing Spotify resource " + type + "/" + name);
         return identifier;
     }

@@ -3,6 +3,10 @@ name: Build Spotify Plus APK
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -41,3 +45,10 @@ jobs:
         with:
           name: SpotifyPlus-Release-APK
           path: app/build/outputs/apk/release/app-release.apk
+
+      - name: Publish APK to dev release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete dev --cleanup-tag -y || true
+          gh release create dev app/build/outputs/apk/release/app-release.apk --prerelease --target "$GITHUB_SHA" --title "Dev build" --notes "Automated build of ${GITHUB_SHA}"

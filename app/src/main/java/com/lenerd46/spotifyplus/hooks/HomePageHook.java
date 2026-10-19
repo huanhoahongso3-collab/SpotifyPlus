@@ -1,5 +1,6 @@
 package com.lenerd46.spotifyplus.hooks;
 
+import com.lenerd46.spotifyplus.SpotifyPackage;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
@@ -46,8 +47,8 @@ public class HomePageHook extends SpotifyHook {
             String rvName = rv.getResources().getResourceName(rvId);
 
             // We only care about the Home feed recycler
-            if (!"com.spotify.music:id/evo_swipe_refresh_layout".equals(parentName)) return;
-            if (!"com.spotify.music:id/recycler_view".equals(rvName)) return;
+            if (!SpotifyPackage.matchesName(parentName, "id", "evo_swipe_refresh_layout")) return;
+            if (!SpotifyPackage.matchesName(rvName, "id", "recycler_view")) return;
 
             // Attach our listener ONCE
 //            attachSectionHider(rv);

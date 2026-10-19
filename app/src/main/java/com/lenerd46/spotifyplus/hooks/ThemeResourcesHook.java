@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.view.View;
+import com.lenerd46.spotifyplus.SpotifyPackage;
 import de.robv.android.xposed.IXposedHookInitPackageResources;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LayoutInflated;
@@ -14,7 +15,6 @@ import java.util.Map;
 
 public final class ThemeResourcesHook implements IXposedHookInitPackageResources {
 
-    private static final String SPOTIFY_PACKAGE = "com.spotify.music";
     private static final String TAG = "SpotifyPlus/ThemeResourcesHook: ";
 
     private static volatile XResources spotifyResources;
@@ -30,7 +30,7 @@ public final class ThemeResourcesHook implements IXposedHookInitPackageResources
 
     @Override
     public void handleInitPackageResources(XC_InitPackageResources.InitPackageResourcesParam resparam) {
-        if (!SPOTIFY_PACKAGE.equals(resparam.packageName)) {
+        if (!SpotifyPackage.shouldHook(resparam)) {
             return;
         }
 
@@ -109,12 +109,12 @@ public final class ThemeResourcesHook implements IXposedHookInitPackageResources
 
     private static void hookCreativeWorkHeaderLayout(XC_InitPackageResources.InitPackageResourcesParam resparam) {
         try {
-            resparam.res.hookLayout(SPOTIFY_PACKAGE, "layout", "creative_work_header_layout", new XC_LayoutInflated() {
+            resparam.res.hookLayout(SpotifyPackage.resPackage, "layout", "creative_work_header_layout", new XC_LayoutInflated() {
                 @Override
                 public void handleLayoutInflated(LayoutInflatedParam liparam) {
                     if (!enabled) return;
                     try {
-                        int artworkBackgroundId = liparam.res.getIdentifier("artwork_background", "id", SPOTIFY_PACKAGE);
+                        int artworkBackgroundId = liparam.res.getIdentifier("artwork_background", "id", SpotifyPackage.resPackage);
 
                         View root = liparam.view;
                         View artworkBackground = root.findViewById(artworkBackgroundId);
@@ -153,10 +153,10 @@ public final class ThemeResourcesHook implements IXposedHookInitPackageResources
     private static void replace(XResources resources, String name, int color) {
         try {
             if (!originalColors.containsKey(name)) {
-                int id = resources.getIdentifier(name, "color", SPOTIFY_PACKAGE);
+                int id = resources.getIdentifier(name, "color", SpotifyPackage.resPackage);
                 if (id != 0) originalColors.put(name, resources.getColor(id, null));
             }
-            resources.setReplacement(SPOTIFY_PACKAGE, "color", name, color);
+            resources.setReplacement(SpotifyPackage.resPackage, "color", name, color);
         } catch (Throwable ignored) {
         }
     }
@@ -166,7 +166,7 @@ public final class ThemeResourcesHook implements IXposedHookInitPackageResources
         if (resources == null) return;
         for (Map.Entry<String, Integer> color : originalColors.entrySet()) {
             try {
-                resources.setReplacement(SPOTIFY_PACKAGE, "color", color.getKey(), color.getValue());
+                resources.setReplacement(SpotifyPackage.resPackage, "color", color.getKey(), color.getValue());
             } catch (Throwable ignored) {
             }
         }

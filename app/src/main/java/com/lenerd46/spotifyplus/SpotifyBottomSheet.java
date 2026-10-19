@@ -65,7 +65,7 @@ public class SpotifyBottomSheet {
         window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         // Resource names survive obfuscation; dialog field names do not.
         for (String name : new String[]{"design_bottom_sheet", "container"}) {
-            int id = context.getResources().getIdentifier(name, "id", context.getPackageName());
+            int id = SpotifyPackage.id(context.getResources(), name, "id");
             View surface = id == 0 ? null : window.findViewById(id);
             if (surface != null) surface.setBackground(null);
         }

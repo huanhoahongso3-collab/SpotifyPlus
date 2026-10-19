@@ -1,5 +1,6 @@
 package com.lenerd46.spotifyplus.hooks;
 
+import com.lenerd46.spotifyplus.SpotifyPackage;
 import com.lenerd46.spotifyplus.theme.ImmersiveArtworkColors;
 import com.lenerd46.spotifyplus.theme.ImmersiveArtworkGeometry;
 
@@ -131,7 +132,7 @@ public final class ImmersiveAnimatedArtwork extends SpotifyHook {
     }
 
     private static View find(View root, String name) {
-        int id = root.getResources().getIdentifier(name, "id", "com.spotify.music");
+        int id = SpotifyPackage.id(root.getResources(), name, "id");
         return id == 0 ? null : root.findViewById(id);
     }
 

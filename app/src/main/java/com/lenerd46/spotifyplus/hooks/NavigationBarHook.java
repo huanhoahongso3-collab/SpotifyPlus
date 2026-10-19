@@ -1,5 +1,6 @@
 package com.lenerd46.spotifyplus.hooks;
 
+import com.lenerd46.spotifyplus.SpotifyPackage;
 import android.content.Context;
 import android.content.SharedPreferences;
 import de.robv.android.xposed.XC_MethodHook;
@@ -25,7 +26,7 @@ final class NavigationBarHook extends SpotifyHook {
     }
 
     @Override protected void hook() throws Exception {
-        int createTitle = context.getResources().getIdentifier("navigationbar_musicappitems_create_title", "string", context.getPackageName());
+        int createTitle = SpotifyPackage.id(context.getResources(), "navigationbar_musicappitems_create_title", "string");
         if (createTitle == 0) throw new IllegalStateException("Navigation create-title resource missing");
         Map<String, MethodData> constructors = new LinkedHashMap<>();
         for (MethodData factory : bridge.findMethod(FindMethod.create().matcher(MethodMatcher.create().usingNumbers(createTitle)))) {

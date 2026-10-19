@@ -1,5 +1,6 @@
 package com.lenerd46.spotifyplus.hooks;
 
+import com.lenerd46.spotifyplus.SpotifyPackage;
 import com.lenerd46.spotifyplus.R;
 import com.lenerd46.spotifyplus.References;
 import android.app.Activity;
@@ -228,20 +229,20 @@ public final class NowPlayingHeartHook extends SpotifyHook {
     }
 
     private static String spotifyString(Context context, String name, String fallback) {
-        int id = context.getResources().getIdentifier(name, "string", "com.spotify.music");
+        int id = SpotifyPackage.id(context.getResources(), name, "string");
         return id == 0 ? fallback : context.getString(id);
     }
 
     private static void render(ImageView button, boolean added) {
         Context context = button.getContext();
         String drawableName = added ? "encore_icon_heart_active_24" : "encore_icon_heart_24";
-        int drawableId = context.getResources().getIdentifier(drawableName, "drawable", "com.spotify.music");
+        int drawableId = SpotifyPackage.id(context.getResources(), drawableName, "drawable");
         Drawable drawable = drawableId == 0 ? null : context.getDrawable(drawableId);
         if (drawable == null) throw new IllegalStateException("Spotify heart drawable missing: " + drawableName);
         button.setImageDrawable(drawable);
 
         String colorName = added ? "encore_accessory_green" : "encore_accessory_white";
-        int colorId = context.getResources().getIdentifier(colorName, "color", "com.spotify.music");
+        int colorId = SpotifyPackage.id(context.getResources(), colorName, "color");
         button.setColorFilter(colorId == 0
                 ? Color.parseColor(added ? "#1ED760" : "#FFFFFF")
                 : context.getColor(colorId));
@@ -249,7 +250,7 @@ public final class NowPlayingHeartHook extends SpotifyHook {
         String descriptionName = added
                 ? "heart_active_button_content_description"
                 : "heart_button_content_description";
-        int descriptionId = context.getResources().getIdentifier(descriptionName, "string", "com.spotify.music");
+        int descriptionId = SpotifyPackage.id(context.getResources(), descriptionName, "string");
         button.setContentDescription(descriptionId == 0
                 ? (added ? References.getString(R.string.ui_remove_from_liked_songs) : References.getString(R.string.ui_add_to_liked_songs))
                 : context.getString(descriptionId));

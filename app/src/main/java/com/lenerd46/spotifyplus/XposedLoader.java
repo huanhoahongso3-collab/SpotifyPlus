@@ -50,9 +50,9 @@ public class XposedLoader implements IXposedHookLoadPackage, IXposedHookZygoteIn
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
-        if (!lpparam.packageName.equals("com.spotify.music"))
+        if (!SpotifyPackage.shouldHook(lpparam))
             return;
-        XposedBridge.log("[SpotifyPlus] Loading SpotifyPlus v" + MODULE_VERSION);
+        XposedBridge.log("[SpotifyPlus] Loading SpotifyPlus v" + MODULE_VERSION + " into " + lpparam.packageName);
 
         if (bridge == null) {
             try {
@@ -185,7 +185,7 @@ public class XposedLoader implements IXposedHookLoadPackage, IXposedHookZygoteIn
 
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
-        intent.setPackage("com.spotify.music");
+        intent.setPackage(SpotifyPackage.appPackage);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         switch (page) {
@@ -428,7 +428,7 @@ public class XposedLoader implements IXposedHookLoadPackage, IXposedHookZygoteIn
     @Override
     public void handleInitPackageResources(XC_InitPackageResources.InitPackageResourcesParam resparam)
             throws Throwable {
-        if (!"com.spotify.music".equals(resparam.packageName)) {
+        if (!SpotifyPackage.shouldHook(resparam)) {
             return;
         }
 
@@ -484,7 +484,7 @@ public class XposedLoader implements IXposedHookLoadPackage, IXposedHookZygoteIn
 
     private void replaceColor(XC_InitPackageResources.InitPackageResourcesParam resparam, String name, int color) {
         try {
-            resparam.res.setReplacement("com.spotify.music", "color", name, color);
+            resparam.res.setReplacement(SpotifyPackage.resPackage, "color", name, color);
             XposedBridge.log("[SpotifyPlus] Replaced color resource: " + name);
         } catch (Throwable t) {
             XposedBridge.log("[SpotifyPlus] Failed to replace color resource: " + name);

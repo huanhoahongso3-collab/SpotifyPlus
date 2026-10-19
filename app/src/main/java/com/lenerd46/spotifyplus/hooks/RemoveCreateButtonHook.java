@@ -140,7 +140,7 @@ public class RemoveCreateButtonHook extends SpotifyHook {
 
                                 Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("spotify:settings"));
                                 i.putExtra("spx", "spotifyplus");
-                                i.setClassName("com.spotify.music", "com.spotify.music.SpotifyMainActivity");
+                                i.setClassName(SpotifyPackage.appPackage, "com.spotify.music.SpotifyMainActivity");
                                 i.putExtra("is_internal_navigation", true);
                                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                                 act.startActivity(i);

@@ -1,5 +1,6 @@
 package com.lenerd46.spotifyplus.hooks;
 
+import com.lenerd46.spotifyplus.SpotifyPackage;
 import com.lenerd46.spotifyplus.R;
 import android.app.Activity;
 import android.content.Context;
@@ -526,7 +527,7 @@ final class NowPlayingSwipeHook extends SpotifyHook {
 
     private View findNowPlayingSheet(View root, View bar) {
         if(root == null) return null;
-        if(NOW_PLAYING_CONTAINER_ID.equals(resourceName(root)) && root != bar && !isAncestor(root, bar) && root.isShown() && root.getHeight() > root.getResources().getDisplayMetrics().heightPixels * 0.75f) return root;
+        if(SpotifyPackage.matchesName(resourceName(root), NOW_PLAYING_CONTAINER_ID) && root != bar && !isAncestor(root, bar) && root.isShown() && root.getHeight() > root.getResources().getDisplayMetrics().heightPixels * 0.75f) return root;
         if(root instanceof ViewGroup) {
             ViewGroup group = (ViewGroup) root;
             for(int i = group.getChildCount() - 1; i >= 0; i--) {
@@ -539,7 +540,7 @@ final class NowPlayingSwipeHook extends SpotifyHook {
 
     private View findViewByResourceName(View root, String name) {
         if(root == null) return null;
-        if(name.equals(resourceName(root))) return root;
+        if(SpotifyPackage.matchesName(resourceName(root), name)) return root;
         if(root instanceof ViewGroup) {
             ViewGroup group = (ViewGroup) root;
             for(int i = group.getChildCount() - 1; i >= 0; i--) {
@@ -620,7 +621,7 @@ final class NowPlayingCardsHook extends SpotifyHook {
     }
 
     private void hideSupplementalCards(View root) {
-        int containerId = root.getResources().getIdentifier("touch_blocking_container", "id", "com.spotify.music");
+        int containerId = SpotifyPackage.id(root.getResources(), "touch_blocking_container", "id");
         View container = containerId == 0 ? null : root.findViewById(containerId);
         if(container == null) return;
         container.setVisibility(View.GONE);
@@ -1327,7 +1328,7 @@ final class NowPlayingControlsHook extends SpotifyHook {
     }
 
     private View find(View root, String name) {
-        int id = root.getResources().getIdentifier(name, "id", "com.spotify.music");
+        int id = SpotifyPackage.id(root.getResources(), name, "id");
         return id == 0 ? null : root.findViewById(id);
     }
 
@@ -1337,7 +1338,7 @@ final class NowPlayingControlsHook extends SpotifyHook {
     }
 
     private String string(View root, String name) {
-        int id = root.getResources().getIdentifier(name, "string", "com.spotify.music");
+        int id = SpotifyPackage.id(root.getResources(), name, "string");
         return id == 0 ? null : root.getResources().getString(id);
     }
 

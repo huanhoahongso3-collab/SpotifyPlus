@@ -1,5 +1,6 @@
 package com.lenerd46.spotifyplus.hooks;
 
+import com.lenerd46.spotifyplus.SpotifyPackage;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -93,8 +94,8 @@ public class SleepTimerHook extends SpotifyHook {
             List<MethodData> invokedFinalizeListMethodCandidates = finalizeListMethodCandidates.stream().filter(method -> sleepTimerBuilderInvokes.contains(method.getDescriptor())).collect(java.util.stream.Collectors.toList());
             Method finalizeListMethod = requireSingleMethod("persistent-list finalization method", invokedFinalizeListMethodCandidates, "public static method returning " + persistentListBuilderClassData.getName() + ", accepting one java.util.List, and directly invoked by " + sleepTimerListMethodData.getDescriptor() + "; all type-compatible candidates were " + describeMethods(finalizeListMethodCandidates)).getMethodInstance(lpparm.classLoader);
 
-            int sleepTimerHoursPluralId = context.getResources().getIdentifier("context_menu_sleep_timer_hours", "plurals", context.getPackageName());
-            int sleepTimerMinutesPluralId = context.getResources().getIdentifier("context_menu_sleep_timer_mins", "plurals", context.getPackageName());
+            int sleepTimerHoursPluralId = SpotifyPackage.id(context.getResources(), "context_menu_sleep_timer_hours", "plurals");
+            int sleepTimerMinutesPluralId = SpotifyPackage.id(context.getResources(), "context_menu_sleep_timer_mins", "plurals");
             if (sleepTimerHoursPluralId == 0 || sleepTimerMinutesPluralId == 0) throw new IllegalStateException(fingerprintMessage("sleep-timer plural resources", "Spotify resources named context_menu_sleep_timer_hours and context_menu_sleep_timer_mins", "resolved IDs: hours=" + sleepTimerHoursPluralId + ", minutes=" + sleepTimerMinutesPluralId));
             var customRowInvokeMethodCandidates = bridge.findMethod(FindMethod.create().matcher(MethodMatcher.create().returnType(Object.class).paramTypes(Object.class, Object.class, Object.class).usingNumbers(sleepTimerHoursPluralId, sleepTimerMinutesPluralId)));
             MethodData customRowInvokeMethodData = requireSingleMethod("Compose sleep-timer duration-row renderer", customRowInvokeMethodCandidates, "three-Object-parameter method returning Object and using both sleep-timer plural resource IDs " + sleepTimerHoursPluralId + " and " + sleepTimerMinutesPluralId);
@@ -112,7 +113,7 @@ public class SleepTimerHook extends SpotifyHook {
             MethodData durationOptionConstructorData = requireSingleMethod("sleep-timer duration option component constructor", durationOptionConstructorCandidates, "the sole one-parameter constructor in " + durationOptionClassData.getName());
             Class<?> durationControllerClass = durationOptionConstructorData.getParamTypes().get(0).getInstance(lpparm.classLoader);
 
-            int sleepTimerSelectMessageId = context.getResources().getIdentifier("context_menu_sleep_timer_select_message", "string", context.getPackageName());
+            int sleepTimerSelectMessageId = SpotifyPackage.id(context.getResources(), "context_menu_sleep_timer_select_message", "string");
             if (sleepTimerSelectMessageId == 0) throw new IllegalStateException(fingerprintMessage("sleep-timer selected message resource", "Spotify string resource named context_menu_sleep_timer_select_message", "resolved ID: 0"));
             var rowClickMethodCandidates = bridge.findMethod(FindMethod.create().matcher(MethodMatcher.create().name("invokeSuspend").returnType(Object.class).paramTypes(Object.class).usingNumbers(sleepTimerSelectMessageId)));
             List<MethodData> durationRowClickMethodCandidates = rowClickMethodCandidates.stream().filter(method -> method.getUsingFields().stream().anyMatch(usingField -> usingField.getField().getDeclaredClassName().equals(durationOptionClassData.getName()))).collect(java.util.stream.Collectors.toList());

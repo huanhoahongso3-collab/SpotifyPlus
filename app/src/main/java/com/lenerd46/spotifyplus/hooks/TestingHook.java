@@ -1,5 +1,6 @@
 package com.lenerd46.spotifyplus.hooks;
 
+import com.lenerd46.spotifyplus.SpotifyPackage;
 import android.content.Context;
 import android.graphics.Outline;
 import android.os.Build;
@@ -136,7 +137,7 @@ public class TestingHook extends SpotifyHook {
         int id = root.getId();
         if (id != View.NO_ID) {
             try {
-                if (idName.equals(root.getContext().getResources().getResourceName(id))) return root;
+                if (SpotifyPackage.matchesName(root.getContext().getResources().getResourceName(id), idName)) return root;
             } catch (Throwable ignored) {
             }
         }

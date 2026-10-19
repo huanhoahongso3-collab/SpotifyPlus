@@ -1,5 +1,6 @@
 package com.lenerd46.spotifyplus.theme;
 
+import com.lenerd46.spotifyplus.SpotifyPackage;
 import com.lenerd46.spotifyplus.hooks.ThemeHook;
 
 import android.app.Activity;
@@ -188,7 +189,7 @@ public final class AnimatedThemeBackground {
     }
 
     private View find(String name) {
-        int id = activity.getResources().getIdentifier(name, "id", activity.getPackageName());
+        int id = SpotifyPackage.id(activity.getResources(), name, "id");
         return id == 0 ? null : contentRoot.findViewById(id);
     }
 

@@ -1,5 +1,6 @@
 package com.lenerd46.spotifyplus.hooks;
 
+import com.lenerd46.spotifyplus.SpotifyPackage;
 import android.app.AndroidAppHelper;
 import android.content.Context;
 import android.content.res.Resources;
@@ -33,7 +34,7 @@ public class SpotifyTitleOverride {
             Resources res = AndroidAppHelper.currentApplication().getResources();
             final String entry = res.getResourceEntryName(resId);
 
-            References.xresources.setReplacement("com.spotify.music", "string", entry, newValue);
+            References.xresources.setReplacement(SpotifyPackage.resPackage, "string", entry, newValue);
         } catch (Throwable t) {
             // XposedBridge.log(t);
         }
