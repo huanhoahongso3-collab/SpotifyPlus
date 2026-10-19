@@ -2,7 +2,7 @@ name: Build Spotify Plus APK
 
 on:
   push:
-    branches: [ main, clone-support ]
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
