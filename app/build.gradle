@@ -19,6 +19,13 @@ android {
     }
 
     signingConfigs {
+        // Fixed debug key so CI builds without the release keystore keep the same signature between builds
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
         release {
             if (keystorePath != null) {
                 storeFile file(keystorePath)
